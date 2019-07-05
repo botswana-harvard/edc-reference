@@ -156,31 +156,33 @@ class Site:
         site_visit_schedules.autodiscover(verbose=False)
         for visit_schedule in site_visit_schedules.registry.values():
             for schedule in visit_schedule.schedules.values():
-                reference = self.reference_updater.update(
-                    name=visit_models[schedule.appointment_model],
-                    fields=['report_datetime'],
-                    get_config=self.get_config)
-                self._register_if_new(reference)
-                for visit in schedule.visits.values():
-                    for crf in visit.all_crfs:
-                        reference = self.reference_updater.update(
-                            name=crf.model,
-                            fields=['report_datetime'],
-                            get_config=self.get_config)
-                        self._register_if_new(reference)
-                    for requisition in visit.all_requisitions:
-                        if not requisition.panel.requisition_model:
-                            raise SiteReferenceConfigError(
-                                'Requisition\'s panel \'requisition_model\' attribute '
-                                f'not set. See "{requisition}". Has the requisition '
-                                'been added to a lab profile and registered? Is the '
-                                'APP in INSTALLED_APPS? Currently '
-                                f'registered lab profiles are {list(site_labs._registry)}.')
-                        reference = self.reference_updater.update(
-                            name=f'{requisition.model}.{requisition.panel.name}',
-                            fields=requisition_fields,
-                            get_config=self.get_config)
-                        self._register_if_new(reference)
+#                 for visit_model in visit_models[schedule.appointment_model]:
+                for visit_model in visit_models[schedule.appointment_model]:
+                    reference = self.reference_updater.update(
+                        name=visit_model,
+                        fields=['report_datetime'],
+                        get_config=self.get_config)
+                    self._register_if_new(reference)
+                    for visit in schedule.visits.values():
+                        for crf in visit.all_crfs:
+                            reference = self.reference_updater.update(
+                                name=crf.model,
+                                fields=['report_datetime'],
+                                get_config=self.get_config)
+                            self._register_if_new(reference)
+                        for requisition in visit.all_requisitions:
+                            if not requisition.panel.requisition_model:
+                                raise SiteReferenceConfigError(
+                                    'Requisition\'s panel \'requisition_model\' attribute '
+                                    f'not set. See "{requisition}". Has the requisition '
+                                    'been added to a lab profile and registered? Is the '
+                                    'APP in INSTALLED_APPS? Currently '
+                                    f'registered lab profiles are {list(site_labs._registry)}.')
+                            reference = self.reference_updater.update(
+                                name=f'{requisition.model}.{requisition.panel.name}',
+                                fields=requisition_fields,
+                                get_config=self.get_config)
+                            self._register_if_new(reference)
 
     def _register_if_new(self, reference):
         try:
